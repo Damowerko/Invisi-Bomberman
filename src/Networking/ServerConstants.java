@@ -1,4 +1,4 @@
-package Server;
+package Networking;
 
 /**
  * Defines a couple global constants for the server.

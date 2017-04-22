@@ -1,7 +1,6 @@
-package Server;
+package Networking;
 
 
 public class ServerModel {
-
 
 }
