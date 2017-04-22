@@ -1,5 +1,6 @@
-/**
- * Created by damowerko on 21/04/2017.
- */
+import Server.Message;
 public interface Networkable {
+    Message createMessage();
+    void update(Message msg);
+    int getId();
 }

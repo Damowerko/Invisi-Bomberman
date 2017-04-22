@@ -1,6 +1,6 @@
-/**
- * Created by damowerko on 21/04/2017.
- */
+package Server;
+
+
 public class ServerModel {
 
 
