@@ -4,7 +4,7 @@ import java.util.*;
 
 public class Grid {
     public static final int GRID_SIZE = 17;
-    public static final double OBS_PROB = 0.1;
+    public static final double OBS_PROB = 0.2;
 
     private Tile[][] grid;
 

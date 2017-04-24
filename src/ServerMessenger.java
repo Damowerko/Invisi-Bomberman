@@ -15,6 +15,8 @@ import java.util.concurrent.Executors;
 public class ServerMessenger extends Messenger {
     private volatile ServerSocket serverSocket;
 
+    protected Type type(){return Type.Server;}
+
     @Override
     public void stop() {
         super.stop();
@@ -52,10 +54,9 @@ public class ServerMessenger extends Messenger {
                 if(openSockets.size() <= Server.playerMax) {
                     int id = nextId++;
                     Socket clientSocket = serverSocket.accept();
-                    System.out.println("Client" + id + " has connected successfully.");
+                    System.out.println("Client" + id + " has connected successfully.\n");
                     addConnection(id, clientSocket);
-                    //TODO: Register users?
-                    //taskQueue.add(new Registration(userId));
+                    inputQueue.add(Message.connected(true, id));
                 }
             }
         } catch (IOException iox) {

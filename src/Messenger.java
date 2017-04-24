@@ -9,6 +9,10 @@ import java.util.concurrent.LinkedBlockingQueue;
  * queue. Don't forget to run execute the run method after initializing.
  */
 public abstract class Messenger implements Runnable {
+    protected enum Type{
+        Server, Client
+    }
+
     protected final Map<Integer, Socket> openSockets;
     protected final BlockingQueue<Message> inputQueue;
     protected final BlockingQueue<Message> outputQueue;
@@ -23,6 +27,8 @@ public abstract class Messenger implements Runnable {
         }
         return null;
     }
+
+    protected abstract Type type();
 
     Messenger(){
         openSockets = Collections.synchronizedMap(new HashMap<Integer, Socket>());
@@ -155,21 +161,19 @@ public abstract class Messenger implements Runnable {
                     try {
                         Message msg = (Message) inputStream.readObject();
                         if (msg != null) {
-                            System.out.printf("Message received from client %d: ", id);
+                            System.out.printf(type().toString() + ": recieved message " + msg.getType().toString());
                             inputQueue.put(msg);
                         } else {
                             socket.close();
-                            //requestQueue.add(new Disconnection(id)); //TODO
+                            inputQueue.add(Message.connected(false, id));
                         }
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    } catch (InterruptedException e){
+                    } catch (ClassNotFoundException | InterruptedException e) {
                         e.printStackTrace();
                     }
                 }
             } catch (IOException iox) {
                 iox.printStackTrace();
-                //requestQueue.add(new Disconnection(id)); //TODO
+                inputQueue.add(Message.connected(false, id));
             } finally {
                 openSockets.remove(id);
             }
@@ -196,6 +200,9 @@ public abstract class Messenger implements Runnable {
             ObjectOutputStream stream = new ObjectOutputStream(socket.getOutputStream());
             stream.flush();
             streams.put(id, stream);
+            if(type() == Type.Server){
+                sendMessage(Message.connected(true, id), stream);
+            }
         }
 
         @Override
@@ -226,7 +233,7 @@ public abstract class Messenger implements Runnable {
 
         private void sendMessage(Message msg, ObjectOutputStream os) throws IOException {
             os.writeObject(msg);
-            System.out.printf(msg.getType().toString() + " message sent to clients.");
+            System.out.printf(type().toString() + ": sent message " + msg.getType().toString());
             os.flush();
         }
     }

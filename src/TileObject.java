@@ -14,5 +14,5 @@ public abstract class TileObject {
         this.y = y;
     }
     public abstract void draw(Graphics g);
-    protected abstract Color getColor();
+
 }

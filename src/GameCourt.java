@@ -1,3 +1,5 @@
+import oracle.jrockit.jfr.JFR;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
@@ -35,7 +37,7 @@ public class GameCourt extends JPanel {
         messenger.start();
         messenger.addConnection(askJoinHost(frame));
 
-        model = new ClientModel();
+        reset(frame);
 
         // creates border around the court area, JComponent method
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -75,9 +77,18 @@ public class GameCourt extends JPanel {
 
     public void update(){
         model.processMessages(messenger.getMessages());
-        if(model.isPlaying()){
-        }
         repaint();
+    }
+
+    public void reset(JFrame frame){
+        model = new ClientModel();
+        (new Thread(new Runnable() {
+            @Override
+            public void run() {
+                readyDialog(frame);
+                messenger.sendMessage(Message.ready(model.getId()));
+            }
+        })).start();
     }
 
 
@@ -145,11 +156,27 @@ public class GameCourt extends JPanel {
     }
 
     private static Socket hostGame() throws IOException {
-        new Server();
+        Server server = new Server();
+        server.start();
         return connectToServer(InetAddress.getLoopbackAddress());
     }
 
     private static Socket connectToServer(InetAddress ipAddress) throws IOException {
         return new Socket(ipAddress, Server.port);
+    }
+
+    private static void readyDialog(JFrame frame){
+        Object[] options = {"Ready!", "Exit"};
+        int choice = JOptionPane.showOptionDialog(frame,
+                "Ready?",
+                "",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.PLAIN_MESSAGE,
+                null,
+                options,
+                1);
+        if(choice == 1){
+            System.exit(0);
+        }
     }
 }

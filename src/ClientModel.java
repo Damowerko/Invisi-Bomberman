@@ -2,8 +2,8 @@ import java.awt.*;
 import java.util.Queue;
 
 public class ClientModel {
-    private boolean playing = false;
     Grid grid;
+    private int id;
 
     ClientModel(){
         this.grid = new Grid();
@@ -19,29 +19,39 @@ public class ClientModel {
         }
     }
 
+    public int getId(){
+        return id;
+    }
+
     private void processMessage(Message msg){
         switch(msg.getType()){
-            case Create:
+            case Create: {
                 TileObject object;
                 CreateMessage cmsg = (CreateMessage) msg;
-                switch(cmsg.objClass){
+                switch (cmsg.objClass) {
                     case DesObj:
                         object = new DestructibleObstalce(cmsg.position.x, cmsg.position.y);
                         grid.place(object, cmsg.position.x, cmsg.position.y);
                         break;
                 }
-            case Input:
+            }
                 break;
-            case Ready:
+            case Input: {
                 break;
-            case Destroy:
+            }
+            case Ready: {
+                break;
+            }
+            case Destroy: {
                 DestroyMessage dmsg = (DestroyMessage) msg;
                 grid.remove(dmsg.position.x, dmsg.position.y);
                 break;
+            }
+            case Connected: {
+                ConnectedMessage cmsg = (ConnectedMessage) msg;
+                id = cmsg.id;
+                break;
+            }
         }
-    }
-
-    public boolean isPlaying(){
-        return playing;
     }
 }

@@ -4,6 +4,11 @@ import java.net.Socket;
 public class ClientMessenger extends Messenger {
     private int nextId;
 
+    @Override
+    protected Type type() {
+        return Type.Client;
+    }
+
     public ClientMessenger(){
         nextId = 0;
     }
