@@ -29,6 +29,9 @@ public class Tile {
         if(object != null){
             object.draw(gt);
         }
+        gt.setColor(Color.red);
+        gt.setFont(new Font("TimesRoman", Font.PLAIN, 32));
+        gt.drawString(Integer.toString(x) + "," + Integer.toString(y), 1,30);
     }
 
     public boolean isEmpty(){

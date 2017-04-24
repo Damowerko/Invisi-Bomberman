@@ -1,20 +1,47 @@
+import com.sun.xml.internal.ws.api.model.MEP;
+
+import java.awt.*;
 import java.util.*;
 
 public class ServerModel {
-    private Map<Integer, Boolean> playerReady;
+    private Map<Integer, Boolean> clients;
+    private Map<Integer, Player> players;
+    Color[] playerColors = {Color.orange, Color.blue, Color.green, Color.magenta};
+
+    private volatile boolean gameOver;
 
     // Grid
     Grid grid;
 
     ServerModel(){
-        playerReady = new TreeMap<>();
+        clients = new HashMap<>();
         reset();
     }
 
-    public void reset(){
+    public Queue<Message> reset(){
+        Queue<Message> msgs = new LinkedList<>();
         grid = new Grid();
-        for(int key : playerReady.keySet()){
-            playerReady.put(key,false);
+        for(int key : clients.keySet()){
+            clients.put(key,false);
+        }
+        players = new HashMap<>();
+        for(int id : clients.keySet()){
+            msgs.add(spawnPlayer(id));
+        }
+        return  msgs;
+    }
+
+    private Message spawnPlayer(int id){
+        Player player = new Player(0,0, playerColors[players.size()], grid);
+        players.put(id, player);
+        return player.spawn();
+    }
+
+    private void disconnect(int id){
+        players.remove(id);
+        clients.remove(id);
+        if(clients.isEmpty()){
+            gameOver = true;
         }
     }
 
@@ -23,16 +50,20 @@ public class ServerModel {
     }
 
     public boolean isReady(){
-        if(playerReady.size() == 0){
+        if(clients.size() == 0){
             return false;
         }
         boolean ready = true;
-        for(boolean rdy : playerReady.values()){
+        for(boolean rdy : clients.values()){
             if(!rdy){
                 ready = false;
             }
         }
         return ready;
+    }
+
+    public boolean isGameOver(){
+        return gameOver;
     }
 
     public Queue<Message> processMessages(Queue<Message> messageQueue){
@@ -52,8 +83,8 @@ public class ServerModel {
                 break;
             case Ready:
                 ReadyMessage rmsg = (ReadyMessage) msg;
-                if(playerReady.containsKey(rmsg.id)){
-                    playerReady.put(rmsg.id, true);
+                if(clients.containsKey(rmsg.id)){
+                    clients.put(rmsg.id, true);
                 }
                 break;
             case Input:
@@ -62,9 +93,9 @@ public class ServerModel {
             case Connected:
                 ConnectedMessage cmsg = (ConnectedMessage) msg;
                 if(cmsg.connected){
-                    playerReady.put(cmsg.id, false);
+                    clients.put(cmsg.id, false);
                 } else {
-                    playerReady.remove(cmsg.id);
+                    disconnect(cmsg.id);
                 }
                 break;
         }

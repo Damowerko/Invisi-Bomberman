@@ -7,8 +7,8 @@ public class Server implements Runnable {
 
     public Server() {
         messenger = new ServerMessenger();
-        messenger.start();
         serverModel = new ServerModel();
+        messenger.start();
     }
 
     public void start(){
@@ -16,7 +16,13 @@ public class Server implements Runnable {
     }
 
     public void run(){
-        reset();
+        // Game loop
+        while(!serverModel.isGameOver()){
+            reset();
+            while(serverModel.isReady()){
+
+            }
+        }
     }
 
     private void reset(){
@@ -25,5 +31,6 @@ public class Server implements Runnable {
             serverModel.processMessages(messenger.getMessages());
         }
         messenger.sendMessage(serverModel.initializeGrid());
+        messenger.sendMessage(serverModel.reset());
     }
 }

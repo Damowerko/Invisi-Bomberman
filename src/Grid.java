@@ -1,10 +1,13 @@
 import java.awt.*;
 import java.util.*;
+import java.util.stream.IntStream;
 
 
 public class Grid {
     public static final int GRID_SIZE = 17;
-    public static final double OBS_PROB = 0.2;
+    private static final double OBS_PROB = 0.3;
+    private static final int SPAWN_SIZE = 3;
+    private static final int[][] spawnPoints = {{0,0},{0,GRID_SIZE-1},{GRID_SIZE-1,0},{GRID_SIZE-1,GRID_SIZE-1}};
 
     private Tile[][] grid;
 
@@ -18,7 +21,7 @@ public class Grid {
                     object = obstacle;
                 }
                 Tile tile = new Tile(object, x, y);
-                grid[y][x] = tile;
+                grid[x][y] = tile;
             }
         }
     }
@@ -27,10 +30,11 @@ public class Grid {
         Queue<Message> messageQueue = new LinkedList<>();
         for(Tile[] row : grid){
             for(Tile tile : row){
-                if(tile.isEmpty()){
+                if(tile.isEmpty() && !isSpawnArea(tile.getX(), tile.getY())){
                     if(Math.random() < OBS_PROB){
                         TileObject object = new DestructibleObstalce(tile.getX(),tile.getY());
-                        Message msg = Message.create(tile.getX(), tile.getY(), Message.ObjClass.DesObj);
+                        Message msg = Message.create(tile.getX(), tile.getY(), null, Message.ObjClass.DesObj);
+                        tile.setObject(object);
                         messageQueue.add(msg);
                     }
                 }
@@ -39,12 +43,44 @@ public class Grid {
         return messageQueue;
     }
 
+    public int[] getSpawnPoint(){
+        Random rand = new Random();
+        int[] point;
+        do{
+            int randInt = rand.nextInt(4);
+            point = spawnPoints[randInt];
+        } while(!getTile(point[0], point[1]).isEmpty());
+        return point;
+    }
+
+    private Tile getTile(int x, int y){
+        if(inBounds(x, y)){
+            return grid[x][y];
+        }
+        return null;
+    }
+
+    private boolean inBounds(int x, int y){
+        if(x < 0 || y < 0 || x > GRID_SIZE - 1 || y > GRID_SIZE - 1){
+            return false;
+        }
+        return true;
+    }
+
+    private boolean isSpawnArea(int x, int y){
+        return isSpawnAreaHelper(x) && isSpawnAreaHelper(y);
+    }
+
+    private boolean isSpawnAreaHelper(int x){
+        return x - SPAWN_SIZE < 0 || GRID_SIZE < x + SPAWN_SIZE;
+    }
+
     public void place(TileObject obj, int x, int y){
-        grid[y][x].setObject(obj);
+        grid[x][y].setObject(obj);
     }
 
     public TileObject remove(int x, int y){
-        return grid[y][x].removeObject();
+        return grid[x][y].removeObject();
     }
 
     public void draw(Graphics g){

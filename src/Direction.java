@@ -6,5 +6,13 @@
  * input to the enum cases)
  */
 public enum Direction {
-    UP, DOWN, LEFT, RIGHT;
+    RIGHT(1,0), UP(0,1), LEFT(-1,0), DOWN(0,-1);
+    private final int x, y;
+    Direction(int x, int y){
+        this.x = x;
+        this.y = y;
+    }
+    public int[] getVector(){
+        return new int[]{x,y};
+    }
 }

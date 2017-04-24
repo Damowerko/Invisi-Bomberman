@@ -33,6 +33,10 @@ public class ClientModel {
                         object = new DestructibleObstalce(cmsg.position.x, cmsg.position.y);
                         grid.place(object, cmsg.position.x, cmsg.position.y);
                         break;
+                    case Player:
+                        Player player = new Player(cmsg.position.x, cmsg.position.y, cmsg.color, null);
+                        grid.place(player, player.x, player.y);
+                        break;
                 }
             }
                 break;

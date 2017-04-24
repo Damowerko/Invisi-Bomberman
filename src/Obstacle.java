@@ -15,6 +15,10 @@ public class Obstacle extends TileObject {
     @Override
     public void draw(Graphics g) {
         g.setColor(this.color);
+        drawShape(g);
+    }
+
+    protected void drawShape(Graphics g){
         g.fillRect(0, 0, Tile.getSize(), Tile.getSize());
     }
 }
