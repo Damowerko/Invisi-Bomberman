@@ -11,6 +11,10 @@ public class Tile {
         this.y = y;
     }
 
+    public Tile(int x, int y){
+        this(null, x, y);
+    }
+
     /**
      * Get the pixel size of an individual tile. This scales depending on DPI.
      * @return Size in pixels.
@@ -46,6 +50,24 @@ public class Tile {
         TileObject object = this.object;
         this.object = null;
         return object;
+    }
+
+    public TileObject getObject(){
+        return object;
+    }
+
+    public boolean isDestructible(){
+        if(object == null) {
+            return false;
+        }
+        return object instanceof Destructible;
+    }
+
+    public boolean isInstanceOf(Class<?> c){
+        if(object == null){
+            return false;
+        }
+        return c.isInstance(object);
     }
 
     // Getters and setters

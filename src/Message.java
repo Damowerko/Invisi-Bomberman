@@ -5,18 +5,26 @@ public abstract class Message implements Serializable {
     public abstract MessageType getType();
 
     public enum MessageType {
-        Ready, Input, Create, Destroy, Connected, Move
+        Ready, Input, Create, Destroy, Connected, Move, Reset, PlayerStatus
     }
     public enum ObjClass{
-        DesObj, Player
+        DesObj, Player, Bomb, Explosion
     }
 
-    public static Message input(Input input){
-        return new InputMessage(input);
+    public static Message input(int id, Input input){
+        return new InputMessage(id, input);
     }
 
     public static Message create(int x, int y, Color color, ObjClass objClass){
         return new CreateMessage(x, y, color, objClass);
+    }
+
+    public static Message reset(){
+        return new ResetMessage();
+    }
+
+    public static Message status(int id, int lives){
+        return new PlayerStatus(id, lives);
     }
 
     public static Message ready(int id){
@@ -47,8 +55,10 @@ class ReadyMessage extends Message{
 class InputMessage extends Message {
     public MessageType getType(){return MessageType.Input;}
     Input input;
-    InputMessage(Input input){
+    int id;
+    InputMessage(int id, Input input){
         this.input = input;
+        this.id = id;
     }
 }
 
@@ -70,6 +80,7 @@ class CreateMessage extends Message {
     CreateMessage(int x, int y, Color color, ObjClass objClass){
         position = new PositionMessage(x, y);
         this.objClass = objClass;
+        this.color = color;
     }
 }
 
@@ -89,6 +100,20 @@ class ConnectedMessage extends Message {
         this.connected = connected;
         this.id = id;
     }
+}
+
+class PlayerStatus extends Message {
+    int id;
+    int lives;
+    public MessageType getType() {return MessageType.PlayerStatus;};
+    PlayerStatus(int id, int lives){
+        this.id = id;
+        this.lives = lives;
+    }
+}
+
+class ResetMessage extends Message {
+    public MessageType getType() {return MessageType.Reset;}
 }
 
 class MoveMessage extends Message{

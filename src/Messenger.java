@@ -1,3 +1,5 @@
+import sun.net.ConnectionResetException;
+
 import java.io.*;
 import java.net.Socket;
 import java.util.*;
@@ -9,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
  * queue. Don't forget to run execute the run method after initializing.
  */
 public abstract class Messenger implements Runnable {
-    protected enum Type{
+    protected enum Type {
         Server, Client
     }
 
@@ -19,8 +21,8 @@ public abstract class Messenger implements Runnable {
     protected volatile boolean running;
     private final OutputHandler outputHandler;
 
-    public Thread start(){
-        if(!running){
+    public Thread start() {
+        if (!running) {
             Thread thread = new Thread(this);
             thread.start();
             return thread;
@@ -30,7 +32,7 @@ public abstract class Messenger implements Runnable {
 
     protected abstract Type type();
 
-    Messenger(){
+    Messenger() {
         openSockets = Collections.synchronizedMap(new HashMap<Integer, Socket>());
         inputQueue = new LinkedBlockingQueue<>();
         outputQueue = new LinkedBlockingQueue<>();
@@ -39,26 +41,27 @@ public abstract class Messenger implements Runnable {
     }
 
     @Override
-    public void run(){
+    public void run() {
         running = true;
         (new Thread(outputHandler)).start();
     }
 
     /**
      * Add a new connection. Must be running.
+     *
      * @param id
      * @param socket
      * @throws IOException
      */
     protected void addConnection(int id, Socket socket) {
-        if(running){
+        if (running) {
             try {
                 //Output (must go first to avoid deadlock)
                 outputHandler.addConnection(id, socket);
                 openSockets.put(id, socket);
                 //Input
                 (new Thread(new InputHandler(id, socket))).start();
-            } catch (IOException e){
+            } catch (IOException e) {
                 e.printStackTrace();
             }
         }
@@ -66,9 +69,10 @@ public abstract class Messenger implements Runnable {
 
     /**
      * Retrieves all incoming messages.
+     *
      * @return Message queue.
      */
-    public Queue<Message> getMessages(){
+    public Queue<Message> getMessages() {
         Queue<Message> out = new LinkedList<>();
         inputQueue.drainTo(out);
         return out;
@@ -76,26 +80,28 @@ public abstract class Messenger implements Runnable {
 
     /**
      * Will send an array of messages.
+     *
      * @param msgs
      */
-    public void sendMessage(Message[] msgs){
-        if(msgs == null){
+    public void sendMessage(Message[] msgs) {
+        if (msgs == null) {
             return;
         }
-        for(Message msg : msgs){
+        for (Message msg : msgs) {
             sendMessage(msgs);
         }
     }
 
     /**
      * Will send a queue of messages. But will block the thread.
+     *
      * @param msgs
      */
-    public void sendMessage(Queue<Message> msgs){
-        if(msgs == null){
+    public void sendMessage(Queue<Message> msgs) {
+        if (msgs == null) {
             return;
         }
-        while(!msgs.isEmpty()){
+        while (!msgs.isEmpty()) {
             Message msg = msgs.remove();
             sendMessage(msg);
         }
@@ -103,10 +109,11 @@ public abstract class Messenger implements Runnable {
 
     /**
      * This will block the thread.
+     *
      * @param msg Message to send
      */
-    public void sendMessage(Message msg){
-        if(msg == null){
+    public void sendMessage(Message msg) {
+        if (msg == null) {
             return;
         }
         try {
@@ -161,7 +168,6 @@ public abstract class Messenger implements Runnable {
                     try {
                         Message msg = (Message) inputStream.readObject();
                         if (msg != null) {
-                            System.out.printf(type().toString() + ": recieved message " + msg.getType().toString());
                             inputQueue.put(msg);
                         } else {
                             socket.close();
@@ -186,13 +192,14 @@ public abstract class Messenger implements Runnable {
     protected class OutputHandler implements Runnable {
         private final Map<Integer, ObjectOutputStream> streams;
 
-        public OutputHandler(){
+        public OutputHandler() {
             streams = Collections.synchronizedMap(new HashMap<Integer, ObjectOutputStream>());
         }
 
         /**
          * Add a connection to the output handler.
-         * @param id The id of the connection.
+         *
+         * @param id     The id of the connection.
          * @param socket The socket on which the connection is.
          * @throws IOException Unable to getOutputStream of socket.
          */
@@ -200,25 +207,25 @@ public abstract class Messenger implements Runnable {
             ObjectOutputStream stream = new ObjectOutputStream(socket.getOutputStream());
             stream.flush();
             streams.put(id, stream);
-            if(type() == Type.Server){
+            if (type() == Type.Server) {
                 sendMessage(Message.connected(true, id), stream);
             }
         }
 
         @Override
-        public void run(){
-            while (running){
-                while (!outputQueue.isEmpty()){
+        public void run() {
+            while (running) {
+                while (!outputQueue.isEmpty()) {
                     Message msg = null;
                     try {
                         msg = outputQueue.take();
                     } catch (InterruptedException e) {
                         e.printStackTrace(); // bad shutdown
                     }
-                    if(msg == null){
+                    if (msg == null) {
                         continue;
                     }
-                    for(int id : streams.keySet()){
+                    for (int id : streams.keySet()) {
                         ObjectOutputStream outputStream = streams.get(id);
                         try {
                             sendMessage(msg, outputStream);
@@ -233,7 +240,6 @@ public abstract class Messenger implements Runnable {
 
         private void sendMessage(Message msg, ObjectOutputStream os) throws IOException {
             os.writeObject(msg);
-            System.out.printf(type().toString() + ": sent message " + msg.getType().toString());
             os.flush();
         }
     }

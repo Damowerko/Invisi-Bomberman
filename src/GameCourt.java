@@ -1,11 +1,11 @@
-import oracle.jrockit.jfr.JFR;
-
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.Socket;
+import java.util.*;
 import javax.swing.*;
+import javax.swing.Timer;
 
 /**
  * GameCourt
@@ -22,22 +22,28 @@ public class GameCourt extends JPanel {
     public static final int INTERVAL = 25;
 
     //User input
-    final Direction[] movementDir = {null};
+    private Input input = null;
+    private Input bombInput = null;
+    private boolean lost = false;
 
     //Message processor;
     ClientModel model;
     ClientMessenger messenger;
 
+    JFrame frame;
+
     public GameCourt(JLabel status) {
         // initialize client
-        JFrame frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+        frame = (JFrame) SwingUtilities.getWindowAncestor(this);
+
+        model = new ClientModel();
 
         // Ask to join host
         messenger = new ClientMessenger();
         messenger.start();
         messenger.addConnection(askJoinHost(frame));
 
-        reset(frame);
+        start();
 
         // creates border around the court area, JComponent method
         setBorder(BorderFactory.createLineBorder(Color.BLACK));
@@ -50,17 +56,24 @@ public class GameCourt extends JPanel {
         addKeyListener(new KeyAdapter() {
             public void keyPressed(KeyEvent e) {
                 if (e.getKeyCode() == KeyEvent.VK_LEFT) {
-                    movementDir[0] = Direction.LEFT;
+                    input = Input.LEFT;
                 } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
-                    movementDir[0] = Direction.RIGHT;
+                    input = Input.RIGHT;
                 } else if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-                    movementDir[0] = Direction.DOWN;
+                    input = Input.DOWN;
                 } else if (e.getKeyCode() == KeyEvent.VK_UP) {
-                    movementDir[0] = Direction.UP;
+                    input = Input.UP;
+                }
+                if (e.getKeyCode() == KeyEvent.VK_SPACE){
+                    bombInput = Input.BOMB;
                 }
             }
             public void keyReleased(KeyEvent e) {
-                movementDir[0] = null;
+                if (e.getKeyCode() == KeyEvent.VK_SPACE){
+                    bombInput = null;
+                } else {
+                    input = null;
+                }
             }
         });
 
@@ -77,11 +90,30 @@ public class GameCourt extends JPanel {
 
     public void update(){
         model.processMessages(messenger.getMessages());
+        messenger.sendMessage(inputMessages());
+        status.setText(model.status());
+        if(model.died()){
+            lost = true;
+            JOptionPane.showMessageDialog(frame, "You lose!", "Lost", JOptionPane.PLAIN_MESSAGE);
+        }
+        if(model.isReset()){
+            restart();
+        }
         repaint();
     }
 
-    public void reset(JFrame frame){
-        model = new ClientModel();
+    private Queue<Message> inputMessages(){
+        Queue<Message> out = new LinkedList<>();
+        if(input != null){
+            out.add(Message.input(model.getId(), input));
+        }
+        if(bombInput != null){
+            out.add(Message.input(model.getId(), bombInput));
+        }
+        return out;
+    }
+
+    public void start(){
         (new Thread(new Runnable() {
             @Override
             public void run() {
@@ -89,6 +121,15 @@ public class GameCourt extends JPanel {
                 messenger.sendMessage(Message.ready(model.getId()));
             }
         })).start();
+    }
+
+    private void restart(){
+        if(!lost){
+            JOptionPane.showMessageDialog(frame, "You win!", "Won", JOptionPane.PLAIN_MESSAGE);
+        }
+        lost = false;
+        model.reset();
+        start();
     }
 
 
@@ -174,7 +215,7 @@ public class GameCourt extends JPanel {
                 JOptionPane.PLAIN_MESSAGE,
                 null,
                 options,
-                1);
+                options[0]);
         if(choice == 1){
             System.exit(0);
         }

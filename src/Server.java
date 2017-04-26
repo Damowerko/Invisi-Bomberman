@@ -11,26 +11,27 @@ public class Server implements Runnable {
         messenger.start();
     }
 
-    public void start(){
+    public void start() {
         (new Thread(this)).start();
     }
 
-    public void run(){
+    public void run() {
         // Game loop
-        while(!serverModel.isGameOver()){
+        do {
             reset();
-            while(serverModel.isReady()){
-
+            while (!serverModel.isGameOver()) {
+                messenger.sendMessage(serverModel.update());
+                messenger.sendMessage(serverModel.processMessages(messenger.getMessages()));
             }
-        }
+        } while(!serverModel.isShutdown());
     }
 
-    private void reset(){
-        serverModel.reset();
-        while(!serverModel.isReady()){
+    private void reset() {
+        messenger.sendMessage(Message.reset());
+        while (!serverModel.isReady()) {
             serverModel.processMessages(messenger.getMessages());
         }
-        messenger.sendMessage(serverModel.initializeGrid());
         messenger.sendMessage(serverModel.reset());
+        messenger.sendMessage(serverModel.initializeGrid());
     }
 }

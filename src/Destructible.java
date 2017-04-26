@@ -1,3 +1,5 @@
+import java.util.Queue;
+
 public interface Destructible {
-    Message destroy();
+    Queue<Message> destroy();
 }
