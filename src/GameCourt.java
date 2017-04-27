@@ -41,7 +41,7 @@ public class GameCourt extends JPanel {
         // Ask to join host
         messenger = new ClientMessenger();
         messenger.start();
-        messenger.addConnection(askJoinHost(frame));
+        messenger.addConnection(startingMenu(frame));
 
         start();
 
@@ -148,30 +148,38 @@ public class GameCourt extends JPanel {
      * Creates a dialog asking to join a game and establishes the connection.
      * @return The socket of the connection.
      */
-    private static Socket askJoinHost(JFrame frame) {
-        Object[] options = {"Host Game", "Join Game", "Exit"};
-        int choice = JOptionPane.showOptionDialog(frame,
-                "",
-                "",
-                JOptionPane.YES_NO_CANCEL_OPTION,
-                JOptionPane.PLAIN_MESSAGE,
-                null,
-                options,
-                options[0]);
-        switch (choice) {
-            case 2:
-                System.exit(0);
-                break;
-            case 1:
-                return joinGame(frame);
-            case 0:
-                try {
-                    return hostGame();
-                } catch (IOException e){
-                    e.printStackTrace();
-                }
+    private static Socket startingMenu(JFrame frame) {
+        while(true) {
+            Object[] options = {"How to play", "Host Game", "Join Game", "Exit"};
+            int choice = JOptionPane.showOptionDialog(frame,
+                    "InvisiBomber: a game by Damian Owerko",
+                    "InvisiBomber",
+                    JOptionPane.YES_NO_CANCEL_OPTION,
+                    JOptionPane.PLAIN_MESSAGE,
+                    null,
+                    options,
+                    options[0]);
+            switch (choice) {
+                case 3:
+                    System.exit(0);
+                    break;
+                case 2:
+                    return joinGame(frame);
+                case 1:
+                    try {
+                        return hostGame();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                case 0:
+                    JOptionPane.showMessageDialog(frame,
+                            "This is a multiplayer game so you must either host a game and\n" +
+                                    "have up to three other players join or join an existing game.\n\n" +
+                                    "Controls: Use arrow keys to MOVE and spacebar to place BOMB",
+                            "How to play",
+                            JOptionPane.PLAIN_MESSAGE);
+            }
         }
-        return null;
     }
 
     private static Socket joinGame(JFrame frame) {

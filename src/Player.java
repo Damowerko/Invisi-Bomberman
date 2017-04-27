@@ -2,7 +2,11 @@ import java.awt.*;
 import java.util.*;
 
 public class Player extends Obstacle implements Destructible {
-    private final static long MOVEMENT_TIMEOUT = 150;
+    private final static long MOVEMENT_TIMEOUT = 250;
+    private final static int MAX_BOMB = 3;
+    private final static long BOMB_RESPAWN_TIME = 1500;
+    private long lastBombTime = 0;
+    private int numBombs;
     private long lastMoveTime;
     private Grid grid;
     private int lives;
@@ -14,6 +18,7 @@ public class Player extends Obstacle implements Destructible {
         lives = 3;
         this.grid = grid;
         lastMoveTime = 0;
+
     }
 
     Player(int x, int y, Color color, Grid grid, int id) {
@@ -83,7 +88,16 @@ public class Player extends Obstacle implements Destructible {
     }
 
     public void placeBomb() {
-        bombBuffer = true;
+        long deltaTime = System.currentTimeMillis() - lastBombTime;
+        numBombs += deltaTime/BOMB_RESPAWN_TIME;
+        if(numBombs > MAX_BOMB){
+            numBombs = 3;
+        }
+        if(!bombBuffer && numBombs > 0){
+            bombBuffer = true;
+            numBombs--;
+            lastBombTime = System.currentTimeMillis();
+        }
     }
 
     @Override

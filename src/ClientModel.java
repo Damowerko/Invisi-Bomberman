@@ -81,7 +81,7 @@ public class ClientModel {
                 int y = cmsg.position.y;
                 switch (cmsg.objClass) {
                     case DesObj:
-                        object = new DestructibleObstalce(x, y);
+                        object = new DestructibleObstalce(x, y, grid);
                         grid.place(object, x, y);
                         break;
                     case Player:
@@ -94,7 +94,6 @@ public class ClientModel {
                         break;
                     case Explosion:
                         Explosion explosion = Explosion.explode(x, y, grid);
-                        System.out.print("Explode\n");
                         grid.place(explosion, x, y);
                         break;
                 }
@@ -108,7 +107,6 @@ public class ClientModel {
             }
             case Destroy: {
                 DestroyMessage dmsg = (DestroyMessage) msg;
-                System.out.printf("Destroy: (%d, %d)\n", dmsg.position.x, dmsg.position.y);
                 grid.remove(dmsg.position.x, dmsg.position.y);
                 break;
             }

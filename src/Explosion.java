@@ -5,7 +5,7 @@ import java.util.Queue;
 public class Explosion extends TileObject implements Updateable {
     private static long MAX_LIFETIME = 400; // the time the explosion lives
     private static long SPREAD_TIME = 100; // the time for the explosion to propagate
-    private static int MAX_RANGE = 100;
+    private static int MAX_RANGE = 5;
     private final int range;
     private final long creationTime;
     private boolean hasSpread = false;

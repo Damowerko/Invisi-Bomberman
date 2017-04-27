@@ -3,8 +3,8 @@ import java.util.*;
 
 
 public class Grid implements Updateable {
-    public static final int GRID_SIZE = 17;
-    private static final double OBS_PROB = 0;
+    public static final int GRID_SIZE = 11;
+    private static final double OBS_PROB = 0.4;
     private static final int SPAWN_SIZE = 3;
     private static final int[][] spawnPoints = {{0, 0}, {0, GRID_SIZE - 1}, {GRID_SIZE - 1, 0}, {GRID_SIZE - 1, GRID_SIZE - 1}};
 
@@ -33,7 +33,7 @@ public class Grid implements Updateable {
             for (Tile tile : row) {
                 if (tile.isEmpty() && !isSpawnArea(tile.getX(), tile.getY())) {
                     if (Math.random() < OBS_PROB) {
-                        TileObject object = new DestructibleObstalce(tile.getX(), tile.getY());
+                        TileObject object = new DestructibleObstalce(tile.getX(), tile.getY(), this);
                         Message msg = Message.create(tile.getX(), tile.getY(), null, Message.ObjClass.DesObj);
                         tile.setObject(object);
                         messageQueue.add(msg);

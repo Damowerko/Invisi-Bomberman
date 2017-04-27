@@ -1,6 +1,7 @@
 import java.awt.*;
 
 public class Tile {
+    private final static int TILE_WIDTH = 15; // tile width in mm
     private TileObject object;
     private final int x;
     private final int y;
@@ -22,7 +23,7 @@ public class Tile {
     public static int getSize() {
         try {
             int DPI = java.awt.Toolkit.getDefaultToolkit().getScreenResolution();
-            return Math.round((10 * DPI)/25.4f);
+            return Math.round((TILE_WIDTH * DPI)/25.4f);
         } catch (HeadlessException e){
             return 0;
         }
@@ -34,8 +35,6 @@ public class Tile {
             object.draw(gt);
         }
         gt.setColor(Color.red);
-        gt.setFont(new Font("TimesRoman", Font.PLAIN, 32));
-        gt.drawString(Integer.toString(x) + "," + Integer.toString(y), 1,30);
     }
 
     public boolean isEmpty(){

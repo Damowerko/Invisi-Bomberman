@@ -4,12 +4,10 @@ import java.util.*;
 public class Bomb extends DestructibleObstalce implements Updateable {
     private final static long FUSE = 3000;
     private final long creationTime;
-    private final Grid grid;
 
     Bomb(int x, int y, Grid grid) {
-        super(x, y, Color.black);
+        super(x, y, Color.black, grid);
         creationTime = System.currentTimeMillis();
-        this.grid = grid;
     }
 
     public Queue<Message> update(){
